@@ -1,12 +1,12 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose"); // Node.js ORM for MongoDB
 
 const db = async () => {
-    try{
-        await mongoose.connect('mongodb+srv://farookjintha:Welcome123@ecommerce-db.p2sfdjs.mongodb.net/?retryWrites=true&w=majority');
-        console.log('Database connection established.')
-    }catch(error){
-        console.log('Error while connecting DB: ', error)
-    }
-}
+  try {
+    await mongoose.connect(process.env.MONGO_URL);
+    console.log("Database connection established.");
+  } catch (error) {
+    console.log("Error while connecting DB: ", error);
+  }
+};
 
 module.exports = db;

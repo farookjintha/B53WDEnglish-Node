@@ -1,19 +1,30 @@
-const express = require('express');
+require("dotenv").config();
 
-const productRoutes = require('./routes/products.routes')
+const express = require("express");
+const cookieParser = require("cookie-parser");
 
-const db = require('./db/connect');
+const productRoutes = require("./routes/products.routes");
+const authRoutes = require("./routes/auth.routes");
+
+const db = require("./db/connect");
 
 // Connecting DB
 db();
 
 const app = express();
 
-app.use(express.json()) // Parsing the req into JSON.
+app.use(express.json()); // Parsing the req into JSON.
+app.use(cookieParser());
 
 // Attaching the routes (middleware)
-app.use(productRoutes);
+app.use("/api/v1", authRoutes);
+app.use("/api/v1", productRoutes);
 
-app.listen(8123, () => {
-    console.log('App is running on PORT 8123')
+const PORT = process.env.PORT || 4000;
+
+app.listen(PORT, () => {
+  console.log("App is running on PORT: ", PORT);
 });
+
+// http://localhost:8123/v1/products
+// http://localhost:8123/v1/product/:productId
