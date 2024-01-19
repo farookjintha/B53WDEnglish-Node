@@ -4,17 +4,21 @@ const {
   addNewProduct,
   updateProductById,
   deleteProductById,
+  getAllAvailableOffers,
 } = require("../controllers/products.controllers");
 const { isAuth } = require("../utils/authentication");
+const { isPrivilegedUser, isAdmin } = require("../utils/authorization");
 
 const router = express.Router();
 
 router.get("/products", getAllProducts);
 
-router.post("/products", isAuth, addNewProduct);
+router.get("/offers", isAuth, isPrivilegedUser, getAllAvailableOffers);
 
-router.put("/products/:productId", isAuth, updateProductById);
+router.post("/products", isAuth, isAdmin, addNewProduct);
 
-router.delete("/products/:productId", isAuth, deleteProductById);
+router.put("/products/:productId", isAuth, isAdmin, updateProductById);
+
+router.delete("/products/:productId", isAuth, isAdmin, deleteProductById);
 
 module.exports = router;

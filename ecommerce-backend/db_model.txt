@@ -1,0 +1,28 @@
+Users Table
+
+PK
+id name         email   mobileNumber password   role  gender
+1  John joh@gmail.com   14324234242  Welcome123    1    M
+2  Priya priya@gmail.com 234242424   Welcome123    2    F
+3  Farook farook@gmail.com 234234242 Welcome123    3    M
+
+
+
+
+
+Admin Table
+    FK
+id userId  address designation domain
+
+
+
+Sellers Table
+    FK
+id userId companyName companyAddress companyGSTIN field 
+
+
+Customers Table
+    FK
+id userId address cardDetails upiDetails
+
+

@@ -22,6 +22,36 @@ exports.getAllProducts = async (req, res) => {
   }
 };
 
+exports.getAllAvailableOffers = async (req, res) => {
+  try {
+    // To get data from DB;
+
+    return res.status(200).send({
+      message: "Available Offers for you.",
+      offers: [
+        {
+          coupon_code: "NY2024",
+          offer_percentage: 10,
+          expiresAt: "31 Jan 2024",
+        },
+        {
+          coupon_code: "WE20",
+          offer_percentage: 20,
+          expiresAt: "21 Jan 2024",
+        },
+        {
+          coupon_code: "NEW15",
+          offer_percentage: 15,
+        },
+      ],
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+    });
+  }
+};
+
 exports.addNewProduct = async (req, res) => {
   try {
     const payload = req.body;

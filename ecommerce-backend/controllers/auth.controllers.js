@@ -1,7 +1,11 @@
 // import bcrypt from "bcrypt";
 const bcrypt = require("bcrypt");
 const Users = require("../models/users.model");
+const Tokens = require("../models/tokens.model");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
+const { sendEmail } = require("../utils/sendEmail");
+const { default: mongoose } = require("mongoose");
 
 exports.signup = async (req, res) => {
   try {
@@ -132,3 +136,113 @@ exports.signout = async (req, res) => {
     });
   }
 };
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).send({
+        message: "Email is required.",
+      });
+    }
+
+    const existingUser = await Users.findOne({ email: email });
+
+    if (!existingUser) {
+      return res.status(400).send({
+        message: "User with the given email does not exist",
+      });
+    }
+
+    let existingToken = await Tokens.findOne({ userId: existingUser._id });
+
+    if (existingToken) {
+      await existingToken.deleteOne();
+    }
+
+    // Generating a random string
+    const newToken = await crypto.randomBytes(32).toString("hex");
+
+    // Hashing the random string to token
+    const token = await bcrypt.hash(newToken, 15);
+
+    const tokenPayload = new Tokens({
+      userId: existingUser._id,
+      token: token,
+    });
+
+    await tokenPayload.save();
+
+    const link = `http://localhost:3000/reset-password/?token=${newToken}&userId=${existingUser._id}`;
+
+    let isMailSent = await sendEmail(
+      existingUser.email,
+      "RESET PASSWORD LIST",
+      {
+        resetPasswordLink: link,
+      }
+    );
+
+    if (isMailSent) {
+      return res.status(200).send({
+        message: "Reset password link has been sent to your email.",
+      });
+    }
+
+    return res.status(500).send({
+      message: "Error while sending reset-password link",
+    });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { userId, token, newPassword } = req.body;
+
+    const resetToken = await Tokens.findOne({ userId: userId });
+
+    if (!resetToken) {
+      return res.status(400).send({ message: "Token does not exist." });
+    }
+
+    const isValidToken = await bcrypt.compare(token, resetToken.token);
+
+    if (!isValidToken) {
+      return res.status(400).send({
+        message: "Invalid token",
+      });
+    }
+
+    const newHashedPassword = await bcrypt.hash(newPassword, 15);
+
+    Users.findByIdAndUpdate(
+      {
+        _id: new mongoose.Types.ObjectId(userId),
+      },
+      { $set: { hashedPassword: newHashedPassword } }
+    )
+      .then((data) => {
+        res.status(200).send({
+          message: "Password has been reset successfully.",
+        });
+      })
+      .catch((error) => {
+        res.status(400).send({
+          message: "Error while resetting the password",
+        });
+      });
+  } catch (error) {
+    res.status(500).send({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+// bcrypt -> is used for hashing
+// jsonwebtoken -> is used for converting jsonObj to token and vice-versa (Encryption and Decryption)
+// crypto -> is used to generate some random string.

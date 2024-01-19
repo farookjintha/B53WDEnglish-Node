@@ -7,7 +7,7 @@ exports.isAuth = async (req, res, next) => {
     if (cookies.accessToken) {
       const obj = await jwt.verify(cookies.accessToken, process.env.SECRET_KEY); // Decryption from token to jsonObj
 
-      // req._id = obj._id;
+      req._id = obj._id;
 
       if (!obj._id) {
         return res.status(401).send({
